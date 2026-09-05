@@ -29,8 +29,13 @@ if uploaded is not None:
                 memo.append(word)
                 url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
 
-                response = requests.get(url)
-                data = response.json()
+                try:
+                    response = requests.get(url, timeout=5)
+                    if response.status_code !=200:
+                        continue
+                    data = response.json()
+                except (requests.exceptions.RequestException, requests.exceptions.JSONDecodeError):
+                    continue
                 try:
                     for j in range(len(data[0]["meanings"][0]["definitions"])):
                         toPrint = data[0]["meanings"][0]["definitions"][j]["definition"]
@@ -41,5 +46,5 @@ if uploaded is not None:
                             st.write(f"{word}({j+1}):{toPrint}")
                         else:
                             st.write(f"({j+1}):{toPrint}")
-                except KeyError:
+                except (KeyError, IndexError, TypeError):
                     continue
